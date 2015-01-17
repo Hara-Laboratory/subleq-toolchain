@@ -6,6 +6,9 @@ import Subleq.Assembly.Prim
 import Control.Applicative ((<$>),(<*),(*>))
 import Control.Monad
 import Text.Parsec
+-- import Data.Map (Map)
+import qualified Data.Map as M
+import Data.List
 
 symbol :: Stream b m Char => String -> ParsecT b u m String
 symbol s = nonLineBreakSpaces *> string s <* nonLineBreakSpaces
@@ -103,5 +106,10 @@ parseObject = do
     return $ (if isMacro then Macro else Subroutine) n args es
 
 parseModule :: Stream b m Char => ParsecT b u m Module
-parseModule = many (parseObject <* spaces) <* eof
+parseModule = do
+    objs <- many (parseObject <* spaces) <* eof
+    let freqs = M.fromListWith (+) [(objectId obj, 1) | obj <- objs]
+    if M.null (M.filter (> (1 :: Integer)) freqs)
+      then return $ Module $ M.fromList [(objectId obj, obj) | obj <- objs]
+      else fail $ "Multiple definitions: " ++ intercalate ", " (M.keys $ M.filter (> 1) freqs)
 

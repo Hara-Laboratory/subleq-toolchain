@@ -1,5 +1,11 @@
 module Subleq.Assembly.Prim where
 
+import Data.Maybe
+import Data.Set (Set)
+import qualified Data.Set as S
+import Data.Map (Map)
+import qualified Data.Map as M
+
 type Id = String
 type Location = String
 
@@ -21,6 +27,6 @@ data Object = Subroutine Id [Id] [Element]
             | Macro Id [Id] [Element]
     deriving (Read, Show, Eq, Ord)
 
-type Module = [Object]
---    deriving (Read, Show, Eq, Ord)
+data Module = Module (Map Id Object)
+    deriving (Read, Show, Eq, Ord)
 
