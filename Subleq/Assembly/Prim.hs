@@ -21,6 +21,9 @@ type LocExpr = (Maybe Location, Expr)
 data Instruction = Subleq
     deriving (Read, Show, Eq, Ord)
 
+instructionArity :: Instruction -> (Int, Int)
+instructionArity Subleq = (1, 3)
+
 data Element = ElemInst Instruction [LocExpr]
              | SubroutineCall (Maybe Location) Id [Expr]
              | ElemLoc Location
@@ -134,7 +137,7 @@ expandMacro _ o@(Macro {}) =  o
 expandMacro m (Subroutine x as es) = Subroutine x as (concatMap (expandMacro' (singletonStack x) m) es)
 
 expandMacro' :: DistinctStack Id -> Module -> Element -> [Element]
-expandMacro' stk m (SubroutineCall l x as) = concatMap (expandMacro' stk' m) es'
+expandMacro' stk m (SubroutineCall l x as) = es''
     where
       stk' = fromMaybe
                (error $ printf "Cyclic macro expansion: %s" (show $ stackToList stk))
@@ -145,5 +148,6 @@ expandMacro' stk m (SubroutineCall l x as) = concatMap (expandMacro' stk' m) es'
             (lookupModule x m)
       es' :: [Element]
       es' = map ElemLoc (maybeToList l) ++ applyObject o as
+      es'' = concatMap (expandMacro' stk' m) es'
 expandMacro' _ _ e@(ElemInst _ _) = [e]
 expandMacro' _ _ e@(ElemLoc _) = [e]

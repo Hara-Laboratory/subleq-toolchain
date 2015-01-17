@@ -6,6 +6,7 @@ import Subleq.Assembly.Prim
 import Control.Applicative ((<$>),(<*),(*>))
 import Control.Monad
 import Text.Parsec
+import Text.Printf
 -- import Data.Map (Map)
 import qualified Data.Map as M
 import Data.List
@@ -69,12 +70,16 @@ parseInstruction :: Stream b m Char => ParsecT b u m Element
 parseInstruction = do
     insn <- parseInstructionType <* spaces
     args <- (parseLocExpr `sepBy` (space >> spaces)) <* symbol ";"
-    return $ ElemInst insn args
+    let (arityMin, arityMax) = instructionArity insn
+    let arity = length args
+    if arityMin <= arity && arity <= arityMax
+      then return $ ElemInst insn args
+      else error $ printf "Instruction %s takes %d to %d arguments, but got: %s" (show insn) arityMin arityMax (show args)
 
 parseSubroutineCall :: Stream b m Char => ParsecT b u m Element
 parseSubroutineCall = do
     loc <- optionMaybe parseLoc
-    (n, args) <- between (string "$(@@") (string ")") content
+    (n, args) <- between (string "$(@@") (string ")" >> symbol ";") content
     return $ SubroutineCall loc n args
   where
     content = do
