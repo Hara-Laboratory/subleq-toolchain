@@ -4,7 +4,7 @@ module Main where
 import Subleq.Model.Prim
 import Subleq.Model.Architecture.IntMachine
 import qualified Subleq.Model.InstructionSet.Subleq as Subleq
-import qualified Subleq.Assembly.Parser as A
+import qualified Subleq.Assembly as A
 import Text.Parsec
 import Control.Applicative
 -- import Data.Map (Map)
