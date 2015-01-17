@@ -7,6 +7,7 @@ import qualified Subleq.Model.InstructionSet.Subleq as Subleq
 import qualified Subleq.Assembly as A
 import Text.Parsec
 import Control.Applicative
+import Text.PrettyPrint
 -- import Data.Map (Map)
 -- import qualified Data.Map as M
 -- import Control.Monad.State
@@ -20,6 +21,11 @@ testParser = parse A.parseModule "parserModule" <$> readFile "test.sq"
 
 testMacro :: IO A.Module
 testMacro = either (error . show) A.expandMacroAll <$> testParser
+
+testPrint :: IO ()
+testPrint = do
+    m <- testMacro
+    putStrLn $ render $ A.printModule m
 
 main :: IO ()
 main = undefined
