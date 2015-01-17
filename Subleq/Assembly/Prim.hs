@@ -5,6 +5,7 @@ import Data.Set (Set)
 import qualified Data.Set as S
 import Data.Map (Map)
 import qualified Data.Map as M
+import Text.Printf
 
 type Id = String
 type Location = String
@@ -22,6 +23,7 @@ data Instruction = Subleq
 
 data Element = ElemInst Instruction [LocExpr]
              | SubroutineCall (Maybe Location) Id [Expr]
+             | ElemLoc Location
     deriving (Read, Show, Eq, Ord)
 
 data Object = Subroutine Id [Id] [Element]
@@ -54,6 +56,7 @@ substituteLocExpr sub (l, e') = (l, substituteExpr sub e')
 substituteElement :: Substitution -> Element -> Element
 substituteElement sub (ElemInst i es) = ElemInst i (map (substituteLocExpr sub) es)
 substituteElement sub (SubroutineCall l i es) = SubroutineCall l i (map (substituteExpr sub) es)
+substituteElement _   e@(ElemLoc _) = e
 
 substituteObject :: Substitution -> Object -> Object
 substituteObject sub (Subroutine n args elems) = Subroutine n args $ map (substituteElement sub) elems
@@ -61,6 +64,7 @@ substituteObject sub (Macro n args elems)      = Macro n args $ map (substituteE
 
 locationsElement :: Element -> Set Id
 locationsElement (ElemInst _ es) = S.fromList $ mapMaybe fst es
+locationsElement (ElemLoc l) = S.singleton l
 locationsElement (SubroutineCall l _ _) = maybeToSet l
 
 locationsObject :: Object -> Set Id
@@ -81,6 +85,7 @@ freeVarLocExpr (_,e) = freeVarExpr e
 freeVarElement :: Element -> Set Id
 freeVarElement (ElemInst _ es) = S.unions $ map freeVarLocExpr es
 freeVarElement (SubroutineCall l x es) = S.unions $ [maybeToSet l, S.singleton x] ++ map freeVarExpr es
+freeVarElement (ElemLoc _) = S.empty
 
 freeVarObject :: Object -> Set Id
 freeVarObject o@(Subroutine _ args es) =  S.unions (map freeVarElement es) S.\\ S.fromList args S.\\ locationsObject o
@@ -88,3 +93,57 @@ freeVarObject o@(Macro _ args es) =  S.unions (map freeVarElement es) S.\\ S.fro
 
 freeVarModule :: Module -> Set Id
 freeVarModule (Module m) =  unionsMap freeVarObject m S.\\ M.keysSet m
+
+applyObject :: Object -> [Expr] -> [Element]
+applyObject (Macro x as es) =  applyObject' x as es
+applyObject (Subroutine x _ _) = error $ printf "%s is a subroutine and not applicable" x
+
+applyObject' :: Id -> [Id] -> [Element] -> [Expr] -> [Element]
+applyObject' x as es aes | length as == length aes = map (substituteElement sub) es
+                         | otherwise               = error $ printf "%s takes %d argument(s), but got: %s" x (show $ length as) (show aes)
+    where
+      sub = M.fromList $ zip as aes
+
+type DistinctStack a = ([a], Set a)
+
+push :: (Ord a)=>a -> DistinctStack a -> Maybe (DistinctStack a)
+push x (xs, st) | x `S.member` st = Just (x:xs, S.insert x st)
+                | otherwise       = Nothing
+
+pop :: (Ord a)=>DistinctStack a -> Maybe (a, DistinctStack a)
+pop ([], _) = Nothing
+pop (x:xs, st) = Just (x, (xs, S.delete x st))
+
+emptyStack :: DistinctStack a
+emptyStack = ([], S.empty)
+
+singletonStack :: (Ord a)=>a -> DistinctStack a
+singletonStack x = ([x], S.singleton x)
+
+stackToList :: DistinctStack a -> [a]
+stackToList = fst
+
+lookupModule :: Id -> Module -> Maybe Object
+lookupModule x (Module m) = M.lookup x m
+
+expandMacroAll :: Module -> Module
+expandMacroAll m@(Module m') = Module $ M.map (expandMacro m) m'
+
+expandMacro :: Module -> Object -> Object
+expandMacro _ o@(Macro {}) =  o
+expandMacro m (Subroutine x as es) = Subroutine x as (concatMap (expandMacro' (singletonStack x) m) es)
+
+expandMacro' :: DistinctStack Id -> Module -> Element -> [Element]
+expandMacro' stk m (SubroutineCall l x as) = concatMap (expandMacro' stk' m) es'
+    where
+      stk' = fromMaybe
+               (error $ printf "Cyclic macro expansion: %s" (show $ stackToList stk))
+               (push x stk)
+      o :: Object
+      o = fromMaybe
+            (error $ printf "Object %s is not found in the module: %s" x (show $ stackToList stk))
+            (lookupModule x m)
+      es' :: [Element]
+      es' = map ElemLoc (maybeToList l) ++ applyObject o as
+expandMacro' _ _ e@(ElemInst _ _) = [e]
+expandMacro' _ _ e@(ElemLoc _) = [e]
