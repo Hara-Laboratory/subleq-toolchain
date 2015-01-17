@@ -1,34 +1,22 @@
-{-# LANGUAGE FlexibleInstances, MultiParamTypeClasses, UndecidableInstances, FunctionalDependencies #-}
+{-# LANGUAGE FlexibleInstances, MultiParamTypeClasses, UndecidableInstances #-}
 module Main where
 
-import Simulator
-import Assembler
-import Data.Map (Map)
-import qualified Data.Map as M
-import Control.Monad.State
-import Control.Lens
+import Subleq.Model.Prim
+import Subleq.Model.Architecture.IntMachine
+import qualified Subleq.Model.InstructionSet.Subleq as Subleq
+import qualified Subleq.Assembly.Parser as A
+import Text.Parsec
+import Control.Applicative
+-- import Data.Map (Map)
+-- import qualified Data.Map as M
+-- import Control.Monad.State
+-- import Control.Lens
 
-step :: IntMachine Bool
-step = do
-    pc <- getPC
-    pA <- readMem $ pc
-    pB <- readMem $ pc + 1
-    pC <- readMem $ pc + 2
-    a <- readMem pA
-    b <- readMem pB
-    let b' = b - a
-    let pc' = if b' < 0 then pC else pc + 3
-    writeMem pB b'
-    putPC pc'
-    return $ pC >= 0
+testSubleq :: [IntSubleqState]
+testSubleq = runMachineHist Subleq.step Subleq.initialMachine
 
-initialMachine :: IntSubleqState
-initialMachine = (6, M.fromList . zip [0..] $ [ 0, 3, 5, 1, 0, 0
-                                              , 1, 0, 9
-                                              , 2, 0, 12
-                                              , 3, 3, 15
-                                              , 0, 3, 18
-                                              , 0, 0, -1])
+testParser :: IO (Either ParseError A.Module)
+testParser = parse A.parseModule "parserModule" <$> readFile "test.sq"
 
 main :: IO ()
 main = undefined
