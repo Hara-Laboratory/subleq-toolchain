@@ -18,5 +18,8 @@ testSubleq = runMachineHist Subleq.step Subleq.initialMachine
 testParser :: IO (Either ParseError A.Module)
 testParser = parse A.parseModule "parserModule" <$> readFile "test.sq"
 
+testMacro :: IO A.Module
+testMacro = either (error . show) A.expandMacroAll <$> testParser
+
 main :: IO ()
 main = undefined
