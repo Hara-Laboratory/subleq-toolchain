@@ -53,11 +53,14 @@ library
                        Subleq.Assembly
                        Subleq.Assembly.Prim
                        Subleq.Assembly.Parser
+                       Subleq.Assembly.Printer
   build-depends:       base >=4.7 && <4.8,
                        containers >=0.5.5.1 && <0.6,
                        mtl >=2.1.3.1 && <2.3,
                        lens >=4.5 && <4.8,
-                       parsec >=3.1 && <3.2
+                       parsec >=3.1 && <3.2,
+                       pretty-1.1 && <1.2
+
   default-language:    Haskell2010
 
 executable subleq-toolchain
@@ -75,7 +78,8 @@ executable subleq-toolchain
                        containers >=0.5.5.1 && <0.6,
                        mtl >=2.1.3.1 && <2.3,
                        lens >=4.5 && <4.8,
-                       parsec >=3.1 && <3.2
+                       parsec >=3.1 && <3.2,
+                       pretty-1.1 && <1.2
 
   
   -- Directories containing source files.
@@ -84,3 +88,4 @@ executable subleq-toolchain
   -- Base language which the package is written in.
   default-language:    Haskell2010
   
+-- vim: set expandtab :

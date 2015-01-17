@@ -1,5 +1,4 @@
-module Subleq.Assembly ( module Subleq.Assembly.Prim
-                       , module Subleq.Assembly.Parser
-                       ) where
-import Subleq.Assembly.Prim
-import Subleq.Assembly.Parser
+module Subleq.Assembly ( module X) where
+import Subleq.Assembly.Prim as X
+import Subleq.Assembly.Parser as X
+import Subleq.Assembly.Printer as X
