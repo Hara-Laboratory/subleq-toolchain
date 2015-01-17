@@ -8,6 +8,7 @@ import qualified Data.Map as M
 
 type Id = String
 type Location = String
+type Substitution = Map Id Expr
 
 data Expr = Identifier Id
           | Number Integer
@@ -43,21 +44,20 @@ objectId :: Object -> Id
 objectId (Subroutine n _ _) = n
 objectId (Macro n _ _) = n
 
-substituteExpr :: Id -> Expr -> Expr -> Expr
-substituteExpr x e i@(Identifier y) | x == y = e
-                                    | x /= y = i
-substituteExpr _ _ e'                        = e'
+substituteExpr :: Substitution -> Expr -> Expr
+substituteExpr sub i@(Identifier x)  = M.findWithDefault i x sub
+substituteExpr _   e'                = e'
 
-substituteLocExpr :: Id -> Expr -> LocExpr -> LocExpr
-substituteLocExpr x e (l, e') = (l, substituteExpr x e e')
+substituteLocExpr :: Substitution -> LocExpr -> LocExpr
+substituteLocExpr sub (l, e') = (l, substituteExpr sub e')
 
-substituteElement :: Id -> Expr -> Element -> Element
-substituteElement x e (ElemInst i es) = ElemInst i (map (substituteLocExpr x e) es)
-substituteElement x e (SubroutineCall l i es) = SubroutineCall l i (map (substituteExpr x e) es)
+substituteElement :: Substitution -> Element -> Element
+substituteElement sub (ElemInst i es) = ElemInst i (map (substituteLocExpr sub) es)
+substituteElement sub (SubroutineCall l i es) = SubroutineCall l i (map (substituteExpr sub) es)
 
-substituteObject :: Id -> Expr -> Object -> Object
-substituteObject x e (Subroutine n args elems) = Subroutine n args $ map (substituteElement x e) elems
-substituteObject x e (Macro n args elems)      = Macro n args $ map (substituteElement x e) elems
+substituteObject :: Substitution -> Object -> Object
+substituteObject sub (Subroutine n args elems) = Subroutine n args $ map (substituteElement sub) elems
+substituteObject sub (Macro n args elems)      = Macro n args $ map (substituteElement sub) elems
 
 locationsElement :: Element -> Set Id
 locationsElement (ElemInst _ es) = S.fromList $ mapMaybe fst es
