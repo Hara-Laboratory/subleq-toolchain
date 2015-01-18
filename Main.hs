@@ -8,8 +8,9 @@ import qualified Subleq.Assembly as A
 import Text.Parsec
 import Control.Applicative
 import Text.PrettyPrint
+import Data.Maybe
 -- import Data.Map (Map)
--- import qualified Data.Map as M
+import qualified Data.Map as M
 -- import Control.Monad.State
 -- import Control.Lens
 
@@ -26,6 +27,30 @@ testPrint :: IO ()
 testPrint = do
     m <- testMacro
     putStrLn $ render $ A.printModule m
+
+subleqMA :: A.MemoryArchitecture
+subleqMA = A.MemoryArchitecture { A.instructionLength = 3
+                                , A.wordLength = 1
+                                , A.locateArg = A.locateArgDefault
+                                , A.locateStatic = M.fromList [ ("Lo", 0x10)
+                                                              , ("End", -0x1)
+                                                              , ("Inc", 0x4)
+                                                              , ("Dec", 0x5)
+                                                              , ("Z", 0x6)
+                                                              , ("T0", 0x8)
+                                                              , ("T1", 0x9)
+                                                              , ("T2", 0xa)
+                                                              , ("T3", 0xb)
+                                                              , ("T4", 0xc)
+                                                              ]
+                                }
+
+testLocate :: IO ()
+testLocate = do
+    m <- testMacro
+    let (Just (obj, next)) = A.locate subleqMA 100 (fromJust $ A.lookupModule "mult" m)
+    putStrLn $ render $ A.printObject obj
+    print next
 
 main :: IO ()
 main = undefined

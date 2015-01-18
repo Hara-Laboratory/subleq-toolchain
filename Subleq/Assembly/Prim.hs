@@ -57,7 +57,9 @@ substituteExpr _   e'                = e'
 substituteLocExpr :: Substitution -> LocExpr -> LocExpr
 substituteLocExpr sub (Just l, e') | l `M.member` sub = case M.lookup l sub of
                                                           Just (Identifier l') -> (Just l', substituteExpr sub e')
-                                                          x -> error $ printf "Label %s cannot be substituted with %s" (show x)
+                                                          -- x -> error $ printf "Label %s cannot be substituted with %s" l (show x)
+                                                          Just _ -> (Nothing, substituteExpr sub e')
+                                                          Nothing -> (Just l, substituteExpr sub e')
 substituteLocExpr sub (l, e') = (l, substituteExpr sub e')
 
 substituteElement :: Substitution -> Element -> Element
