@@ -1,4 +1,4 @@
-module Subleq.Assembly.Prim where
+module Language.Subleq.Assembly.Prim where
 
 import Data.Maybe
 import Data.Set (Set)

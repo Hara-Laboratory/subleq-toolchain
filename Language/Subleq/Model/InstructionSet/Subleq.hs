@@ -1,8 +1,8 @@
 {-# LANGUAGE FlexibleInstances, MultiParamTypeClasses, UndecidableInstances #-}
-module Subleq.Model.InstructionSet.Subleq (step, initialMachine) where
+module Language.Subleq.Model.InstructionSet.Subleq (step, initialMachine) where
 
-import Subleq.Model.Prim
-import qualified Subleq.Model.Memory as Mem
+import Language.Subleq.Model.Prim
+import qualified Language.Subleq.Model.Memory as Mem
 
 step :: (Memory a a m, Num a, Ord a) => Machine a w m Bool
 step = do

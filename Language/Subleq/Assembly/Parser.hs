@@ -1,8 +1,8 @@
 {-# LANGUAGE FlexibleInstances, MultiParamTypeClasses, UndecidableInstances, FlexibleContexts #-}
 -- {-# LANGUAGE FlexibleInstances, MultiParamTypeClasses, UndecidableInstances, FunctionalDependencies, FlexibleInstances, FlexibleContexts #-}
-module Subleq.Assembly.Parser where
+module Language.Subleq.Assembly.Parser where
 
-import Subleq.Assembly.Prim
+import Language.Subleq.Assembly.Prim
 import Control.Applicative ((<$>),(<*),(*>))
 import Control.Monad
 import Text.Parsec

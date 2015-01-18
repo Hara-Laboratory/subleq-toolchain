@@ -1,8 +1,8 @@
 {-# LANGUAGE Rank2Types #-}
-module Subleq.Assembly.Locate where
+module Language.Subleq.Assembly.Locate where
 
-import Subleq.Assembly.Prim
-import qualified Subleq.Assembly.Prim as A
+import Language.Subleq.Assembly.Prim
+import qualified Language.Subleq.Assembly.Prim as A
 -- import Subleq.Model
 -- import Data.Maybe
 -- import Data.Set (Set)

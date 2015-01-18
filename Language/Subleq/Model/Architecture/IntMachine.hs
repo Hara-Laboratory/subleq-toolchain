@@ -1,7 +1,7 @@
 {-# LANGUAGE FlexibleInstances, MultiParamTypeClasses, UndecidableInstances #-}
-module Subleq.Model.Architecture.IntMachine (Word, IntMachine, IntSubleqState) where
+module Language.Subleq.Model.Architecture.IntMachine (Word, IntMachine, IntSubleqState) where
 
-import Subleq.Model.Prim
+import Language.Subleq.Model.Prim
 import Data.Map (Map)
 
 type Word = Integer

@@ -1,6 +1,6 @@
-module Subleq.Assembly.Printer where
+module Language.Subleq.Assembly.Printer where
 
-import Subleq.Assembly.Prim
+import Language.Subleq.Assembly.Prim
 import Text.PrettyPrint
 import qualified Data.Map as M
 

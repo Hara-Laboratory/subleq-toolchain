@@ -1,8 +1,8 @@
 {-# LANGUAGE FlexibleInstances, MultiParamTypeClasses, UndecidableInstances #-}
-module Subleq.Model.Prim (Address, Memory, SubleqState, Machine, getPC, putPC, readMem, writeMem, advancePC, runMachineStep, runMachine, runMachineHist) where
+module Language.Subleq.Model.Prim (Address, Memory, SubleqState, Machine, getPC, putPC, readMem, writeMem, advancePC, runMachineStep, runMachine, runMachineHist) where
 
-import Subleq.Model.Memory (Address, Memory)
-import qualified Subleq.Model.Memory as Mem
+import Language.Subleq.Model.Memory (Address, Memory)
+import qualified Language.Subleq.Model.Memory as Mem
 import Control.Monad.State
 
 type SubleqState a w m = (a, m)
