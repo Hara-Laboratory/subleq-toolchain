@@ -2,6 +2,7 @@
 module Main where
 
 import Subleq.Model.Prim
+import Subleq.Model.Memory as Mem
 import Subleq.Model.Architecture.IntMachine
 import qualified Subleq.Model.InstructionSet.Subleq as Subleq
 import qualified Subleq.Assembly as A
@@ -28,11 +29,11 @@ testPrint = do
     m <- testMacro
     putStrLn $ render $ A.printModule m
 
-subleqMA :: A.MemoryArchitecture
+subleqMA :: A.MemoryArchitecture (M.Map Integer Integer)
 subleqMA = A.MemoryArchitecture { A.instructionLength = 3
                                 , A.wordLength = 1
                                 , A.locateArg = A.locateArgDefault
-                                , A.locateStatic = M.fromList [ ("Lo", 0x10)
+                                , A.locateStatic = M.fromList [ ("Lo", 0x120)
                                                               , ("End", -0x1)
                                                               , ("Inc", 0x4)
                                                               , ("Dec", 0x5)
@@ -43,6 +44,7 @@ subleqMA = A.MemoryArchitecture { A.instructionLength = 3
                                                               , ("T3", 0xb)
                                                               , ("T4", 0xc)
                                                               ]
+                                , A.writeWord = Mem.write
                                 }
 
 testLocate :: IO ()

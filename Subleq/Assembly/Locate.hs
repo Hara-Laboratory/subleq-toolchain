@@ -1,3 +1,4 @@
+{-# LANGUAGE Rank2Types #-}
 module Subleq.Assembly.Locate where
 
 import Subleq.Assembly.Prim
@@ -12,23 +13,24 @@ import Text.Printf
 import Control.Monad.State
 -- import Data.List
 
-data MemoryArchitecture = MemoryArchitecture { wordLength :: Integer
-                                             , instructionLength :: Integer
-                                             , locateArg :: LocateArg
-                                             , locateStatic :: Map Id Integer
-                                             }
+data MemoryArchitecture m = MemoryArchitecture { wordLength :: Integer
+                                               , instructionLength :: Integer
+                                               , locateArg :: LocateArg
+                                               , locateStatic :: Map Id Integer
+                                               , writeWord :: Integer -> Integer -> m -> m
+                                               }
 
 type LocateArg = [Id] -> Map Id Integer
 
 locateArgDefault :: LocateArg
 locateArgDefault xs = M.fromList $ zip xs [1..]
 
-locateLocExpr :: MemoryArchitecture -> Integer -> [LocExpr] -> Map A.Id Integer
+locateLocExpr :: MemoryArchitecture m -> Integer -> [LocExpr] -> Map A.Id Integer
 locateLocExpr _  _ [] = M.empty
 locateLocExpr ma i ((Nothing, _):es) = locateLocExpr ma (i + wordLength ma) es
 locateLocExpr ma i ((Just l, _):es) = M.insert l i $ locateLocExpr ma (i + wordLength ma) es
 
-locate' :: MemoryArchitecture -> [Element] -> State Integer (Map A.Id Integer)
+locate' :: MemoryArchitecture m -> [Element] -> State Integer (Map A.Id Integer)
 locate' _ [] = return M.empty
 locate' ma (ElemInst Subleq es : elems) = do
     i <- get
@@ -42,7 +44,7 @@ locate' ma (ElemLoc l : elems) = do
     return $ M.insert l i loc
 locate' _  (SubroutineCall {} : _) = error $ printf "locate: please do macro expansion first."
 
-locate :: MemoryArchitecture -> Integer -> Object -> Maybe (Object, Integer)
+locate :: MemoryArchitecture m -> Integer -> Object -> Maybe (Object, Integer)
 locate ma i o@(Subroutine _ args es) = Just (substituteObject sub o, next)
     where
       (mp, next) = runState (locate' ma es) i
