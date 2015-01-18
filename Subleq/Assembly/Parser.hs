@@ -107,8 +107,12 @@ parseObject = do
     isMacro <- try (string "@@" *> return True) <|> (string "@" *> return False)
     (n, args) <- parseHeader
     es <- many (parseElement <* many nonLineBreakSpace <* skipCommentOrSpaces)
+    let obj = (if isMacro then Macro else Subroutine) n args es
+    let errors = errorsObject obj
     -- es <- many (parseElement <* spaces)
-    return $ (if isMacro then Macro else Subroutine) n args es
+    if null errors
+    then return obj
+    else error $ unlines errors
 
 parseModule :: Stream b m Char => ParsecT b u m Module
 parseModule = do

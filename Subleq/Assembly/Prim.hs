@@ -6,6 +6,7 @@ import qualified Data.Set as S
 import Data.Map (Map)
 import qualified Data.Map as M
 import Text.Printf
+import Data.List
 
 type Id = String
 type Location = String
@@ -54,6 +55,9 @@ substituteExpr sub i@(Identifier x)  = M.findWithDefault i x sub
 substituteExpr _   e'                = e'
 
 substituteLocExpr :: Substitution -> LocExpr -> LocExpr
+substituteLocExpr sub (Just l, e') | l `M.member` sub = case M.lookup l sub of
+                                                          Just (Identifier l') -> (Just l', substituteExpr sub e')
+                                                          x -> error $ printf "Label %s cannot be substituted with %s" (show x)
 substituteLocExpr sub (l, e') = (l, substituteExpr sub e')
 
 substituteElement :: Substitution -> Element -> Element
@@ -70,9 +74,53 @@ locationsElement (ElemInst _ es) = S.fromList $ mapMaybe fst es
 locationsElement (ElemLoc l) = S.singleton l
 locationsElement (SubroutineCall l _ _) = maybeToSet l
 
+locationsElements :: [Element] -> Set Id
+locationsElements = S.unions . map locationsElement
+
 locationsObject :: Object -> Set Id
 locationsObject (Subroutine _ _ elems) = S.unions $ map locationsElement elems
 locationsObject (Macro _ _ elems) = S.unions $ map locationsElement elems
+
+freqMap :: (Ord a)=>[a] -> M.Map a Int
+freqMap xs = M.fromListWith (+) . zip xs $ repeat 1
+
+locationsOccursionElement :: Element -> Map Id Int
+locationsOccursionElement (ElemInst _ es) = freqMap $ mapMaybe fst es
+locationsOccursionElement (ElemLoc l) = M.singleton l 1
+locationsOccursionElement (SubroutineCall Nothing _ _) = M.empty
+locationsOccursionElement (SubroutineCall (Just l) _ _) = M.singleton l 1
+
+locationsOccursionElements :: [Element] -> Map Id Int
+locationsOccursionElements = M.unionsWith (+) . map locationsOccursionElement
+
+locationsOccursionObject :: Object -> Map Id Int
+locationsOccursionObject (Subroutine _ _ elems) = locationsOccursionElements elems
+locationsOccursionObject (Macro _ _ elems) = locationsOccursionElements elems
+
+errorsObject :: Object -> [String]
+errorsObject (Subroutine n args elems) = errorsObject' n args elems
+errorsObject (Macro n args elems) = errorsObject' n args elems
+
+errorsObject' :: Id -> [Id] -> [Element] -> [String]
+errorsObject' n args elems = catMaybes [e1, e2, e3]
+    where
+      e1 | not . null $ dupLocs =
+           Just $
+             printf "Object %s: locations must be exclusive, but: %s" n (show dupLocs)
+         | otherwise = Nothing
+      e2 | not . null $ dupArgs =
+           Just $
+             printf "Object %s: arguments must be exclusive, but: %s" n (show dupArgs)
+         | otherwise = Nothing
+      e3 | not . null $ dupArgLocs =
+           Just $
+             printf "Object %s: locations and arguments must be exclusive, but: %s" n (show dupArgLocs)
+         | otherwise = Nothing
+      argFreq = freqMap args
+      locFreq = locationsOccursionElements elems
+      dupArgs = M.elems . M.filter (> 1) $ argFreq
+      dupLocs = M.elems . M.filter (> 1) $ locFreq
+      dupArgLocs = M.elems . M.filter (> 1) $ M.unionWith (+) argFreq locFreq
 
 boundedVars :: Object -> Set Id
 boundedVars o@(Subroutine _ args _) = S.fromList args `S.union` locationsObject o
@@ -97,13 +145,13 @@ freeVarObject o@(Macro _ args es) =  S.unions (map freeVarElement es) S.\\ S.fro
 freeVarModule :: Module -> Set Id
 freeVarModule (Module m) =  unionsMap freeVarObject m S.\\ M.keysSet m
 
-applyObject :: Object -> [Expr] -> [Element]
-applyObject (Macro x as es) =  applyObject' x as es
-applyObject (Subroutine x _ _) = error $ printf "%s is a subroutine and not applicable" x
+applyObject :: LabelPrefix -> Object -> [Expr] -> [Element]
+applyObject lp (Macro x as es) =  applyObject' lp x as es
+applyObject _  (Subroutine x _ _) = error $ printf "%s is a subroutine and not applicable" x
 
-applyObject' :: Id -> [Id] -> [Element] -> [Expr] -> [Element]
-applyObject' x as es aes | length as == length aes = map (substituteElement sub) es
-                         | otherwise               = error $ printf "%s takes %d argument(s), but got: %s" x (show $ length as) (show aes)
+applyObject' :: LabelPrefix -> Id -> [Id] -> [Element] -> [Expr] -> [Element]
+applyObject' lp x as es aes | length as == length aes = addLocationPrefix lp $ map (substituteElement sub) es
+                            | otherwise               = error $ printf "%s takes %d argument(s), but got: %s" x (show $ length as) (show aes)
     where
       sub = M.fromList $ zip as aes
 
@@ -134,10 +182,10 @@ expandMacroAll m@(Module m') = Module $ M.map (expandMacro m) m'
 
 expandMacro :: Module -> Object -> Object
 expandMacro _ o@(Macro {}) =  o
-expandMacro m (Subroutine x as es) = Subroutine x as (concatMap (expandMacro' (singletonStack x) m) es)
+expandMacro m (Subroutine x as es) = Subroutine x as (concatMap (\(i, e)->expandMacro' (singletonStack x) m [i] e) $ zip [0..] es)
 
-expandMacro' :: DistinctStack Id -> Module -> Element -> [Element]
-expandMacro' stk m (SubroutineCall l x as) = es''
+expandMacro' :: DistinctStack Id -> Module -> LabelPrefix -> Element -> [Element]
+expandMacro' stk m lp (SubroutineCall l x as) = es''
     where
       stk' = fromMaybe
                (error $ printf "Cyclic macro expansion: %s" (show $ stackToList stk))
@@ -147,7 +195,19 @@ expandMacro' stk m (SubroutineCall l x as) = es''
             (error $ printf "Object %s is not found in the module: %s" x (show $ stackToList stk))
             (lookupModule x m)
       es' :: [Element]
-      es' = map ElemLoc (maybeToList l) ++ applyObject o as
-      es'' = concatMap (expandMacro' stk' m) es'
-expandMacro' _ _ e@(ElemInst _ _) = [e]
-expandMacro' _ _ e@(ElemLoc _) = [e]
+      es' = map ElemLoc (maybeToList l) ++ applyObject lp o as
+      es'' = concatMap (\(i, e)-> expandMacro' stk' m (i:lp) e) $ zip [0..] es'
+expandMacro' _ _ _ e@(ElemInst _ _) = [e]
+expandMacro' _ _ _ e@(ElemLoc _) = [e]
+
+addLocationPrefix :: LabelPrefix -> [Element] -> [Element]
+addLocationPrefix lp elems = elems'
+    where
+      elems' = map (substituteElement sub) elems
+      locs = locationsElements elems
+      sub = M.fromSet (Identifier . (labelPrefixToString lp ++)) locs
+
+type LabelPrefix = [Int]
+
+labelPrefixToString :: LabelPrefix -> String
+labelPrefixToString = ('_':) . intercalate "_" . reverse . map show
