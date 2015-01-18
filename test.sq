@@ -6,14 +6,19 @@ Z Rd;
 Z Z End;
 
 @mult Rs,Rt // incomplete
-Z Rs Lns;                   // if Rs < 0 then Lns else Lps
-Lps:Rs Z; Z T2; Z Z Lmultu; // T2 <- Rs  = abs(Rs)
-Lns:Rs T2; Dec T1;          // T2 <- -Rs = abs(Rs), T1 <- -1  
+Z Rs Lsns;                   // if Rs < 0 then Lns else Lps
+Lsps:Rs Z; Z T2; Z T2; Z Z; // T2 <- 2*Rs  = abs(Rs)
+Inc T1;						// T1 <- T1 + 1
+Lsns:Rs T2; Dec T1;          // T2 <- T2-Rs = abs(Rs), T1 <- -1  
+Z Rt Ltns;                   // if Rs < 0 then Lns else Lps
+Ltps:Rt Z; Z T3; Z T3; Z Z; // T2 <- 2*Rs  = abs(Rs)
+Inc T1;						// T1 <- T1 + 1
+Ltns:Rt T3; Dec T1;          // T2 <- T2-Rs = abs(Rs), T1 <- -1  
 Lmultu:Lo;                  // it's ok because Rt and lo are not aliased.
-$(@@multu Lo,T2,Rt,Linv);    // lo <- abs(Rs) * (-Rt)
-Linv:Z T1 Lend;             // if Rs < 0 (i.e. T1 < 0) then Lend else next
-Lo T1; T1 Z; Lo; Z Lo Lend; // (in this case Rs >= 0 and T1 = 0), lo <- -lo
+$(@@multu Lo,T2,T3,Linv);    // lo <- abs(Rs) * (-Rt)
+Linv:Z T1 Linvloop;          // if Rs < 0 (i.e. T1 < 0) then Linvloop else next
 Lend:T1; T2; Z Z End;
+Linvloop:T2; Lo T2; T3; T2 T3; Lo; T3 Lo; Inc T1 Linvloop; Z Inc Lend;
 
 @@multu Ad,Ax,Ay,Aend // internal subroutine macro: Ad <- Ax * (-Ay) + Ad; assumes Ax >= 0; modifies Ax, Ad
 Lloop:Dec Ax Aend;
