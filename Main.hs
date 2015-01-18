@@ -9,6 +9,7 @@ import qualified Subleq.Assembly as A
 import Text.Parsec
 import Control.Applicative
 import Text.PrettyPrint
+import Text.Printf
 import Data.Maybe
 -- import Data.Map (Map)
 import qualified Data.Map as M
@@ -53,6 +54,33 @@ testLocate = do
     let (Just (obj, next)) = A.locate subleqMA 100 (fromJust $ A.lookupModule "mult" m)
     putStrLn $ render $ A.printObject obj
     print next
+
+testLocateModulePacked :: IO ()
+testLocateModulePacked = do
+    mo <- testMacro
+    let (end, ma) = A.locateModulePacked subleqMA 100 mo
+    putStrLn $ render $ vcat $ map (\(addr, obj) -> text "Address" <+> integer addr <> colon $$ A.printObject obj ) $ M.elems ma
+    print end
+
+testLoadModulePacked :: IO ()
+testLoadModulePacked = do
+    mo <- testMacro
+    print $ A.loadModulePacked subleqMA 100 mo M.empty
+    -- let (end, ma) = A.loadModulePacked subleqMA 100 mo
+    -- putStrLn $ render $ vcat $ map (\(addr, obj) -> text "Address" <+> integer addr <> colon $$ A.printObject obj ) $ M.elems ma
+    -- print end
+
+testAdd :: IO ()
+testAdd = do
+    mo <- testMacro
+    let (a, b) = (3, 8)
+    let (_, pos, mem) = A.loadModulePacked subleqMA 100 mo M.empty
+    let Just addrAdd = M.lookup "add" pos
+    let mem' = Mem.write 2 a . Mem.write 3 b $ mem
+    let hist = runMachineHist Subleq.step (addrAdd, mem')
+    putStrLn $ printf "%d + %d = %d" a b (Mem.read 1 . snd . last $ hist)
+    putStrLn "Traces:"
+    print hist
 
 main :: IO ()
 main = undefined
