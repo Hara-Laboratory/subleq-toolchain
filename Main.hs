@@ -70,6 +70,21 @@ testLoadModulePacked = do
     -- putStrLn $ render $ vcat $ map (\(addr, obj) -> text "Address" <+> integer addr <> colon $$ A.printObject obj ) $ M.elems ma
     -- print end
 
+showIntSubleqState :: IntSubleqState -> String
+showIntSubleqState (pc, mem) = render $ integer pc <> colon <+> hsep (map (\a-> integer $ Mem.read a mem) [0..16]) <+> colon <+> integer (Mem.read 0x120 mem)
+
+
+testMult :: Integer -> Integer -> IO [IntSubleqState]
+testMult a b = do
+    mo <- testMacro
+    let (_, pos, mem) = A.loadModulePacked subleqMA 100 mo M.empty
+    let Just addrAdd = M.lookup "mult" pos
+    let mem' = Mem.write 1 a . Mem.write 2 b $ mem
+    -- let (_,mem'') = runMachine Subleq.step (addrAdd, mem')
+    -- putStrLn $ printf "%d * %d = %d" a b (Mem.read 0x120 mem'')
+    let hist = runMachineHist Subleq.step (addrAdd, mem')
+    return hist
+
 testAdd :: IO ()
 testAdd = do
     mo <- testMacro
@@ -83,4 +98,4 @@ testAdd = do
     print hist
 
 main :: IO ()
-main = undefined
+main = (unlines . take 50 . map showIntSubleqState <$> testMult 1 3) >>= putStrLn
