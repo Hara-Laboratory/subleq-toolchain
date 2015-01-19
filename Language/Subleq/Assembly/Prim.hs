@@ -50,6 +50,10 @@ objectId :: Object -> Id
 objectId (Subroutine n _ _) = n
 objectId (Macro n _ _) = n
 
+objectArity :: Object -> Int
+objectArity (Subroutine _ args _) = length args
+objectArity (Macro _ args _) = length args
+
 substituteExpr :: Substitution -> Expr -> Expr
 substituteExpr sub i@(Identifier x)  = M.findWithDefault i x sub
 substituteExpr _   e'                = e'
