@@ -49,6 +49,7 @@ library
   exposed-modules:     Language.Subleq.Model.Prim
                        Language.Subleq.Model.Memory
                        Language.Subleq.Model.Architecture.IntMachine
+                       Language.Subleq.Model.Architecture.Fix2Machine
                        Language.Subleq.Model.InstructionSet.Subleq
                        Language.Subleq.Assembly
                        Language.Subleq.Assembly.Prim
