@@ -1,11 +1,11 @@
 {-# LANGUAGE FlexibleInstances, MultiParamTypeClasses, UndecidableInstances #-}
 module Main where
 
-import Subleq.Model.Prim
-import Subleq.Model.Memory as Mem
-import Subleq.Model.Architecture.IntMachine
-import qualified Subleq.Model.InstructionSet.Subleq as Subleq
-import qualified Subleq.Assembly as A
+import Language.Subleq.Model.Prim
+import Language.Subleq.Model.Memory as Mem
+import Language.Subleq.Model.Architecture.IntMachine
+import qualified Language.Subleq.Model.InstructionSet.Subleq as Subleq
+import qualified Language.Subleq.Assembly as A
 import Text.Parsec
 import Control.Applicative
 import Text.PrettyPrint

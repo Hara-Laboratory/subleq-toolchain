@@ -64,7 +64,10 @@ library
 
   default-language:    Haskell2010
 
-executable subleq-toolchain
+Test-Suite test-subleq-toolchain
+  type: exitcode-stdio-1.0
+  hs-source-dirs:
+    examples
   -- .hs or .lhs file containing the Main module.
   main-is:             Main.hs
   
@@ -80,7 +83,9 @@ executable subleq-toolchain
                        mtl >=2.1.3.1 && <2.3,
                        lens >=4.5 && <4.8,
                        parsec >=3.1 && <3.2,
-                       pretty >=1.1 && <1.2
+                       pretty >=1.1 && <1.2,
+                       template-haskell >= 2.4,
+                       subleq-toolchain == 0.1.0.0
 
   
   -- Directories containing source files.
@@ -88,5 +93,3 @@ executable subleq-toolchain
   
   -- Base language which the package is written in.
   default-language:    Haskell2010
-  
--- vim: set expandtab :
