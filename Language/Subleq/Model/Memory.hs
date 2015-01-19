@@ -1,5 +1,5 @@
 {-# LANGUAGE FlexibleInstances, MultiParamTypeClasses, UndecidableInstances, FunctionalDependencies #-}
-module Language.Subleq.Model.Memory (Address, Memory, read, write, empty, fromAssocList) where
+module Language.Subleq.Model.Memory (Address(advance), Memory(read, write, empty, fromAssocList)) where
 
 import Prelude hiding (read)
 import Data.Map (Map)
