@@ -17,7 +17,7 @@ import qualified Data.Map as M
 -- import Control.Lens
 
 testSubleq :: [IntSubleqState]
-testSubleq = runMachineHist Subleq.step Subleq.initialMachine
+testSubleq = snd $ runMachineWithHistory Subleq.step Subleq.initialMachine
 
 testParser :: IO (Either ParseError A.Module)
 testParser = parse A.parseModule "parserModule" <$> readFile "test.sq"
@@ -82,7 +82,7 @@ testMult a b = do
     let mem' = Mem.write 1 a . Mem.write 2 b . Mem.write 4 (-1) . Mem.write 5 1 $ mem
     -- let (_,mem'') = runMachine Subleq.step (addrAdd, mem')
     -- putStrLn $ printf "%d * %d = %d" a b (Mem.read 0x120 mem'')
-    let hist = runMachineHist Subleq.step (addrAdd, mem')
+    let hist = snd $ runMachineWithHistory Subleq.step (addrAdd, mem')
     return $ (addrAdd, mem') : hist
 
 testAdd :: IO ()
@@ -92,8 +92,8 @@ testAdd = do
     let (_, pos, mem) = A.loadModulePacked subleqMA 100 mo M.empty
     let Just addrAdd = M.lookup "add" pos
     let mem' = Mem.write 2 a . Mem.write 3 b $ mem
-    let hist = runMachineHist Subleq.step (addrAdd, mem')
-    putStrLn $ printf "%d + %d = %d" a b (Mem.read 1 . snd . last $ hist)
+    let (res,hist) = runMachineWithHistory Subleq.step (addrAdd, mem')
+    putStrLn $ printf "%d + %d = %d" a b (Mem.read 1 . snd $ res)
     putStrLn "Traces:"
     print hist
 

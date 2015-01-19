@@ -1,9 +1,10 @@
 {-# LANGUAGE FlexibleInstances, MultiParamTypeClasses, UndecidableInstances #-}
-module Language.Subleq.Model.Prim (Address, Memory, SubleqState, Machine, getPC, putPC, readMem, writeMem, advancePC, runMachineStep, runMachine, runMachineHist) where
+module Language.Subleq.Model.Prim (Address, Memory, SubleqState, Machine, getPC, putPC, readMem, writeMem, advancePC, runMachineStep, runMachine, runMachineWithHistory) where
 
 import Language.Subleq.Model.Memory (Address, Memory)
 import qualified Language.Subleq.Model.Memory as Mem
 import Control.Monad.State
+import Control.Arrow
 
 type SubleqState a w m = (a, m)
 
@@ -33,6 +34,11 @@ runMachineStep st m = m'
 
 runMachineHist :: Machine a w m Bool -> SubleqState a w m -> [SubleqState a w m]
 runMachineHist st m = cont `seq` if cont then m':runMachineHist st m' else [m']
+    where
+      (cont, m') = runState st m
+
+runMachineWithHistory :: Machine a w m Bool -> SubleqState a w m -> (SubleqState a w m, [SubleqState a w m])
+runMachineWithHistory st m = cont `seq` if cont then second (m':) $ runMachineWithHistory st m' else (m', [m'])
     where
       (cont, m') = runState st m
 
