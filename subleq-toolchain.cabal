@@ -10,7 +10,7 @@ name:                subleq-toolchain
 -- PVP summary:      +-+------- breaking API changes
 --                   | | +----- non-breaking API additions
 --                   | | | +--- code changes with no API change
-version:             0.1.0.0
+version:             0.1.1.1
 
 -- A short (one-line) description of the package.
 synopsis:            Toolchain of subleq computer.
@@ -51,6 +51,7 @@ library
                        Language.Subleq.Model.Architecture.IntMachine
                        Language.Subleq.Model.Architecture.Fix2Machine
                        Language.Subleq.Model.InstructionSet.Subleq
+                       Language.Subleq.Model.InstructionSet.Subneg
                        Language.Subleq.Assembly
                        Language.Subleq.Assembly.Prim
                        Language.Subleq.Assembly.Parser
@@ -86,7 +87,7 @@ Test-Suite test-subleq-toolchain
                        parsec >=3.1 && <3.2,
                        pretty >=1.1 && <1.2,
                        template-haskell >= 2.4,
-                       subleq-toolchain == 0.1.0.0
+                       subleq-toolchain == 0.1.1.1
 
   
   -- Directories containing source files.
