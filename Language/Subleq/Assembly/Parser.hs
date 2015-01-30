@@ -26,7 +26,7 @@ parseIdChar = oneOf "abc"
 parseId :: Stream b m Char => ParsecT b u m Id
 parseId = do
     c <- letter
-    cs <- many alphaNum
+    cs <- many (alphaNum <|> oneOf "_")
     return (c:cs)
 
 parseSubroutineName :: Stream b m Char => ParsecT b u m Id
