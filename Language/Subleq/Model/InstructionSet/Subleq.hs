@@ -13,7 +13,7 @@ step = do
     a <- readMem pA
     b <- readMem pB
     let b' = b - a
-    let pc' = if b' < 0 then pC else pc + 3
+    let pc' = if b' <= 0 then pC else pc + 3
     writeMem pB b'
     putPC pc'
     return $ pC >= 0
