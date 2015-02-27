@@ -58,18 +58,22 @@ substituteExpr :: Substitution -> Expr -> Expr
 substituteExpr sub i@(Identifier x)  = M.findWithDefault i x sub
 substituteExpr _   e'                = e'
 
+substituteLocId :: Substitution -> Id -> Id
+substituteLocId sub l | l `M.member` sub = case M.lookup l sub of
+                                             Just (Identifier l') -> l'
+                                             Just x -> error $ printf "Label %s cannot be substituted with %s" l (show x)
+                                             -- Just _ -> (Nothing, substituteExpr sub e')
+                                             Nothing -> l
+substituteLocId _   l = l
+
 substituteLocExpr :: Substitution -> LocExpr -> LocExpr
-substituteLocExpr sub (Just l, e') | l `M.member` sub = case M.lookup l sub of
-                                                          Just (Identifier l') -> (Just l', substituteExpr sub e')
-                                                          -- x -> error $ printf "Label %s cannot be substituted with %s" l (show x)
-                                                          Just _ -> (Nothing, substituteExpr sub e')
-                                                          Nothing -> (Just l, substituteExpr sub e')
+substituteLocExpr sub (Just l, e') = (Just (substituteLocId sub l), substituteExpr sub e')
 substituteLocExpr sub (l, e') = (l, substituteExpr sub e')
 
 substituteElement :: Substitution -> Element -> Element
 substituteElement sub (ElemInst i es) = ElemInst i (map (substituteLocExpr sub) es)
-substituteElement sub (SubroutineCall l i es) = SubroutineCall l i (map (substituteExpr sub) es)
-substituteElement _   e@(ElemLoc _) = e
+substituteElement sub (SubroutineCall l i es) = SubroutineCall (fmap (substituteLocId sub) l) i (map (substituteExpr sub) es)
+substituteElement sub (ElemLoc l) = ElemLoc $ substituteLocId sub l
 
 substituteObject :: Substitution -> Object -> Object
 substituteObject sub (Subroutine n args elems) = Subroutine n args $ map (substituteElement sub) elems
