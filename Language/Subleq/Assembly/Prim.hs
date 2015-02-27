@@ -156,10 +156,11 @@ applyObject lp (Macro x as es) =  applyObject' lp x as es
 applyObject _  (Subroutine x _ _) = error $ printf "%s is a subroutine and not applicable" x
 
 applyObject' :: LabelPrefix -> Id -> [Id] -> [Element] -> [Expr] -> [Element]
-applyObject' lp x as es aes | length as == length aes = addLocationPrefix lp $ map (substituteElement sub) es
+applyObject' lp x as es aes | length as == length aes = map (substituteElement sub) $ addLocationPrefix lp targets es -- addLocationPrefix lp $ map (substituteElement sub) es
                             | otherwise               = error $ printf "%s takes %d argument(s), but got: %s" x (show $ length as) (show aes)
     where
-      sub = M.fromList $ zip as aes
+      sub = M.fromList $ zip (map (labelPrefixToString lp ++) as) aes
+      targets = S.fromList as `S.union` locationsElements es
 
 type DistinctStack a = ([a], Set a)
 
@@ -206,12 +207,11 @@ expandMacro' stk m lp (SubroutineCall l x as) = es''
 expandMacro' _ _ _ e@(ElemInst _ _) = [e]
 expandMacro' _ _ _ e@(ElemLoc _) = [e]
 
-addLocationPrefix :: LabelPrefix -> [Element] -> [Element]
-addLocationPrefix lp elems = elems'
+addLocationPrefix :: LabelPrefix -> Set Id -> [Element] -> [Element]
+addLocationPrefix lp targets elems = elems'
     where
       elems' = map (substituteElement sub) elems
-      locs = locationsElements elems
-      sub = M.fromSet (Identifier . (labelPrefixToString lp ++)) locs
+      sub = M.fromSet (Identifier . (labelPrefixToString lp ++)) targets
 
 type LabelPrefix = [Int]
 
