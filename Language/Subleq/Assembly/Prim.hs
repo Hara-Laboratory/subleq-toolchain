@@ -170,8 +170,8 @@ applyObject' lp x as es aes | length as == length aes = map (substituteElement s
 type DistinctStack a = ([a], Set a)
 
 push :: (Ord a)=>a -> DistinctStack a -> Maybe (DistinctStack a)
-push x (xs, st) | x `S.member` st = Just (x:xs, S.insert x st)
-                | otherwise       = Nothing
+push x (xs, st) | x `S.member` st = Nothing
+                | otherwise       = Just (x:xs, S.insert x st)
 
 pop :: (Ord a)=>DistinctStack a -> Maybe (a, DistinctStack a)
 pop ([], _) = Nothing
