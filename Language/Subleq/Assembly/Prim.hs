@@ -200,7 +200,7 @@ expandMacro' :: DistinctStack Id -> Module -> LabelPrefix -> Element -> [Element
 expandMacro' stk m lp (SubroutineCall l x as) = es''
     where
       stk' = fromMaybe
-               (error $ printf "Cyclic macro expansion: %s" (show $ stackToList stk))
+               (error $ printf "%s: Cyclic macro expansion: %s" x (show $ stackToList stk))
                (push x stk)
       o :: Object
       o = fromMaybe
