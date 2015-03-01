@@ -61,7 +61,8 @@ substituteExpr _   e'                = e'
 substituteLocId :: Substitution -> Id -> Id
 substituteLocId sub l | l `M.member` sub = case M.lookup l sub of
                                              Just (Identifier l') -> l'
-                                             Just x -> error $ printf "Label %s cannot be substituted with %s" l (show x)
+                                             -- Just x -> error $ printf "Label %s cannot be substituted with %s" l (show x)
+                                             Just x -> printf "%s(%s)" l (show x)
                                              -- Just _ -> (Nothing, substituteExpr sub e')
                                              Nothing -> l
 substituteLocId _   l = l
