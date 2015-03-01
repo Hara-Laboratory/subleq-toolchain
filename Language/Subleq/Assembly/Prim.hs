@@ -162,7 +162,7 @@ applyObject _  (Subroutine x _ _) = error $ printf "%s is a subroutine and not a
 
 applyObject' :: LabelPrefix -> Id -> [Id] -> [Element] -> [Expr] -> [Element]
 applyObject' lp x as es aes | length as == length aes = map (substituteElement sub) $ addLocationPrefix lp targets es -- addLocationPrefix lp $ map (substituteElement sub) es
-                            | otherwise               = error $ printf "%s takes %d argument(s), but got: %s" x (show $ length as) (show aes)
+                            | otherwise               = error $ printf "%s takes %d argument(s), but got: %s" x (length as) (show aes)
     where
       sub = M.fromList $ zip (map (labelPrefixToString lp ++) as) aes
       targets = S.fromList as `S.union` locationsElements es
