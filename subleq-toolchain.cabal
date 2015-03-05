@@ -105,6 +105,6 @@ executable subleq
                        lens >=4.5 && <4.8,
                        parsec >=3.1 && <3.2,
                        pretty >=1.1 && <1.2,
-                       cmdargs >=0.10, <1
+                       cmdargs >=0.10 && <1
 
   default-language:    Haskell2010
