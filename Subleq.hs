@@ -37,22 +37,23 @@ subleqMA = A.MemoryArchitecture { A.instructionLength = 3
                                                               , ("T4", 44)
                                                               , ("T5", 45)
                                                               , ("T6", 46)
-                                                              , ("CW", 47)
-                                                              , ("Inc", 48)
-                                                              , ("Dec", 49)
+                                                              , ("CW", cw)
+                                                              , ("Inc", inc)
+                                                              , ("Dec", dec)
                                                               ]
                                 , A.writeWord = Mem.write
                                 }
 
-inc, dec :: (Num a) => a
-inc = 0x4
-dec = 0x5
+cw, inc, dec :: (Num a) => a
+cw  = 47
+inc = 48
+dec = 49
 
 wordLength :: (Num a) => a
 wordLength = 32
 
 subleqMAInitialMem :: (Num a, Ord a) => M.Map a a
-subleqMAInitialMem = Mem.write 0xf wordLength . Mem.write inc (-1) . Mem.write dec 1 $ M.empty
+subleqMAInitialMem = Mem.write cw wordLength . Mem.write inc (-1) . Mem.write dec 1 $ M.empty
 
 
 -- main :: IO ()
@@ -132,7 +133,7 @@ assemble s = do
     renderModule = render . A.printModule
     convert "id" = renderModule
     convert "expand" = renderModule . expand
-    convert "packed" = \mo-> renderLoadPackResult $ A.loadModulePacked subleqMA (s^.startAddress) (expand mo) M.empty
+    convert "packed" = \mo-> renderLoadPackResult $ A.loadModulePacked subleqMA (s^.startAddress) (expand mo) subleqMAInitialMem
     convert "elf2mem" = convert "packed"
     convert fmt = error $ printf "Unknown format: `%s'" fmt
 
