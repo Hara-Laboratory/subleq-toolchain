@@ -19,26 +19,39 @@ import qualified Data.Map as M
 import Control.Lens
 import System.Console.CmdArgs
 
+locateArg :: A.LocateArg
+locateArg xs = M.fromList $ zip xs [37, 38, 39] -- DEST_LOC, SRC1_LOC, SRC2_LOC 
+
 subleqMA :: A.MemoryArchitecture (M.Map Integer Integer)
 subleqMA = A.MemoryArchitecture { A.instructionLength = 3
                                 , A.wordLength = 1
                                 , A.locateArg = A.locateArgDefault
-                                , A.locateStatic = M.fromList [ ("Lo", 0x120)
+                                , A.locateStatic = M.fromList [ ("Lo", 32)
+                                                              , ("Hi", 33)
                                                               , ("End", -0x1)
                                                               , ("Inc", 0x4)
                                                               , ("Dec", 0x5)
-                                                              , ("Z", 0x6)
-                                                              , ("T0", 0x8)
-                                                              , ("T1", 0x9)
-                                                              , ("T2", 0xa)
-                                                              , ("T3", 0xb)
-                                                              , ("T4", 0xc)
+                                                              , ("Z",  36)
+                                                              , ("T0", 40)
+                                                              , ("T1", 41)
+                                                              , ("T2", 42)
+                                                              , ("T3", 43)
+                                                              , ("T4", 44)
+                                                              , ("CW", 0xf)
                                                               ]
                                 , A.writeWord = Mem.write
                                 }
 
-parseFile :: FilePath -> IO (Either ParseError A.Module)
-parseFile path = parse A.parseModule "parserModule" <$> readFile path
+inc, dec :: (Num a) => a
+inc = 0x4
+dec = 0x5
+
+wordLength :: (Num a) => a
+wordLength = 32
+
+subleqMAInitialMem :: (Num a, Ord a) => M.Map a a
+subleqMAInitialMem = Mem.write 0xf wordLength . Mem.write inc (-1) . Mem.write dec 1 $ M.empty
+
 
 -- main :: IO ()
 -- main = (unlines . take 50 . map showIntSubleqState <$> testMult 1 3) >>= putStrLn
@@ -52,6 +65,7 @@ data Subleq = Subleq { _file :: FilePath
                      , _out :: FilePath
                      , _arch :: String
                      , _format :: String
+                     , _startAddress :: Integer
                      }
             deriving (Show, Data, Typeable)
 makeLenses ''Subleq
@@ -61,6 +75,7 @@ sample = Subleq { _file = def &= argPos 0 &= typFile
                 , _out = def &= explicit &= name "o" &= name "out" &= typFile &= help "Output file"
                 , _format = def &= explicit &= name "f" &= name "format" &= typ "FORMAT" &= help "Output format (id, expand, packed, elf2mem)"
                 , _arch = def &= explicit &= name "m" &= name "target" &= typ "TARGET" &= opt "subleq-int" &= help "Target architecture (subleq-int)"
+                , _startAddress = def &= explicit &= name "f" &= name "from" &= typ "ADDRESS" &= opt "100" &= help "The address where the subleq routines start."
                 }
          &= help "Assemble subleq programs."
          &= summary "Subleq Assembler v0.1.1.4 (C) SAKAMOTO Noriaki"
@@ -97,9 +112,14 @@ docMemory m = vcat $ map docBlick l
 renderLoadPackResult :: (Integer, M.Map A.Id Integer, M.Map Integer Integer) -> String
 renderLoadPackResult (end, funcs, mem) = render $ vcat [endAddr, text "", addrTable, text "", memCont]
   where
-    endAddr = (text "[header]" $+$) . nest 4 $ vcat [text "version: 1", text "type: packed", text "end" <> colon <+> integer end]
+    endAddr = (text "[header]" $+$) . nest 4 . vcat $ headers ++ [text "end" <> colon <+> integer end]
     addrTable = (text "[symbols]" $+$) . nest 4 . vcat $ map (\(func, addr) -> text func <> colon <+> text "@" <> integer addr ) $ M.toList funcs
     memCont = (text "[text]" $+$) . nest 4 . docMemory $ mem
+    headers = [ text "version: 1"
+              , text "type: packed"
+              , text "byte-order: big-endian"
+              , text "word-size: 4"
+              ]
 
 assemble :: Subleq -> IO ()
 assemble s = do
@@ -110,7 +130,8 @@ assemble s = do
     renderModule = render . A.printModule
     convert "id" = renderModule
     convert "expand" = renderModule . expand
-    convert "packed" = \mo-> renderLoadPackResult $ A.loadModulePacked subleqMA 100 (expand mo) M.empty
+    convert "packed" = \mo-> renderLoadPackResult $ A.loadModulePacked subleqMA (s^.startAddress) (expand mo) M.empty
+    convert "elf2mem" = convert "packed"
     convert fmt = error $ printf "Unknown format: `%s'" fmt
 
     -- let (end, ma) = A.loadModulePacked subleqMA 100 mo
