@@ -32,11 +32,6 @@ runMachineStep st m = m'
     where
       (_, m') = runState st m
 
-runMachineHist :: Machine a w m Bool -> SubleqState a w m -> [SubleqState a w m]
-runMachineHist st m = cont `seq` if cont then m':runMachineHist st m' else [m']
-    where
-      (cont, m') = runState st m
-
 runMachineWithHistory :: Machine a w m Bool -> SubleqState a w m -> (SubleqState a w m, [SubleqState a w m])
 runMachineWithHistory st m = cont `seq` if cont then second (m':) $ runMachineWithHistory st m' else (m', [m'])
     where
