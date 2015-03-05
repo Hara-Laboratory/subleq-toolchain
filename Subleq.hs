@@ -29,8 +29,6 @@ subleqMA = A.MemoryArchitecture { A.instructionLength = 3
                                 , A.locateStatic = M.fromList [ ("Lo", 32)
                                                               , ("Hi", 33)
                                                               , ("End", -0x1)
-                                                              , ("Inc", 0x4)
-                                                              , ("Dec", 0x5)
                                                               , ("Z",  36)
                                                               , ("T0", 40)
                                                               , ("T1", 41)
@@ -39,7 +37,9 @@ subleqMA = A.MemoryArchitecture { A.instructionLength = 3
                                                               , ("T4", 44)
                                                               , ("T5", 45)
                                                               , ("T6", 46)
-                                                              , ("CW", 0xf)
+                                                              , ("CW", 47)
+                                                              , ("Inc", 48)
+                                                              , ("Dec", 49)
                                                               ]
                                 , A.writeWord = Mem.write
                                 }
