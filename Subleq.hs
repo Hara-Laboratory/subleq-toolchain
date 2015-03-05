@@ -20,7 +20,7 @@ import Control.Lens
 import System.Console.CmdArgs
 
 locateArg :: A.LocateArg
-locateArg xs = M.fromList $ zip xs [37, 38, 39] -- DEST_LOC, SRC1_LOC, SRC2_LOC 
+locateArg xs = M.fromList $ zip xs [38, 39, 37] -- DEST_LOC, SRC1_LOC, SRC2_LOC 
 
 subleqMA :: A.MemoryArchitecture (M.Map Integer Integer)
 subleqMA = A.MemoryArchitecture { A.instructionLength = 3
@@ -37,6 +37,8 @@ subleqMA = A.MemoryArchitecture { A.instructionLength = 3
                                                               , ("T2", 42)
                                                               , ("T3", 43)
                                                               , ("T4", 44)
+                                                              , ("T5", 45)
+                                                              , ("T6", 46)
                                                               , ("CW", 0xf)
                                                               ]
                                 , A.writeWord = Mem.write
@@ -75,7 +77,7 @@ sample = Subleq { _file = def &= argPos 0 &= typFile
                 , _out = def &= explicit &= name "o" &= name "out" &= typFile &= help "Output file"
                 , _format = def &= explicit &= name "f" &= name "format" &= typ "FORMAT" &= help "Output format (id, expand, packed, elf2mem)"
                 , _arch = def &= explicit &= name "m" &= name "target" &= typ "TARGET" &= opt "subleq-int" &= help "Target architecture (subleq-int)"
-                , _startAddress = def &= explicit &= name "f" &= name "from" &= typ "ADDRESS" &= opt "100" &= help "The address where the subleq routines start."
+                , _startAddress = def &= explicit &= name "b" &= name "begin" &= typ "ADDRESS" &= opt "100" &= help "The address where the subleq routines start."
                 }
          &= help "Assemble subleq programs."
          &= summary "Subleq Assembler v0.1.1.4 (C) SAKAMOTO Noriaki"
