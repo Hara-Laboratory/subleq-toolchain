@@ -20,15 +20,16 @@ import Control.Lens
 import System.Console.CmdArgs
 
 locateArg :: A.LocateArg
-locateArg xs = M.fromList $ zip xs [38, 39, 37] -- DEST_LOC, SRC1_LOC, SRC2_LOC 
+locateArg xs = M.fromList $ zip xs [37, 38, 39] -- DEST_LOC, SRC1_LOC, SRC2_LOC
+-- locateArg xs = M.fromList $ zip xs [38, 39, 37] -- SRC1_LOC, SRC2_LOC, DEST_LOC
 
 subleqMA :: A.MemoryArchitecture (M.Map Integer Integer)
 subleqMA = A.MemoryArchitecture { A.instructionLength = 3
                                 , A.wordLength = 1
-                                , A.locateArg = A.locateArgDefault
+                                , A.locateArg = locateArg
                                 , A.locateStatic = M.fromList [ ("Lo", 32)
                                                               , ("Hi", 33)
-                                                              , ("End", -0x1)
+                                                              , ("End", 999)
                                                               , ("Z",  36)
                                                               , ("T0", 40)
                                                               , ("T1", 41)
@@ -44,10 +45,11 @@ subleqMA = A.MemoryArchitecture { A.instructionLength = 3
                                 , A.writeWord = Mem.write
                                 }
 
-cw, inc, dec :: (Num a) => a
+cw, inc, dec, exitPoint :: (Num a) => a
 cw  = 47
 inc = 48
 dec = 49
+exitPoint = 999
 
 wordLength :: (Num a) => a
 wordLength = 32
