@@ -54,8 +54,36 @@ parseIntegerLiteral = do
     n <- read <$> many1 digit
     return (s * n)
 
+parseCurrentPos :: Stream b m Char => ParsecT b u m Expr
+parseCurrentPos = do
+    char '?'
+    return $ Identifier "?"
+
+parseExprParen :: Stream b m Char => ParsecT b u m Expr
+parseExprParen = do
+    char '(' <* spaces
+    op <- oneOf "+-" <* space <* spaces
+    e1 <- parseExpr <* space <* spaces
+    e2 <- parseExpr <* spaces
+    char ')'
+    return $ op' op e1 e2
+  where
+    op' '+' = EAdd
+    op' '-' = ESub
+
+parseExprCurrentPos :: Stream b m Char => ParsecT b u m Expr
+parseExprCurrentPos = do
+    char '(' <* spaces
+    e1 <- parseCurrentPos
+    op <- oneOf "+-" <* spaces
+    e2 <- parseExpr <* spaces <* char ')'
+    return $ op' op e1 e2
+  where
+    op' '+' = EAdd
+    op' '-' = ESub
+
 parseExpr :: Stream b m Char => ParsecT b u m Expr
-parseExpr = (Number <$> parseIntegerLiteral) <|> (Identifier <$> parseId)
+parseExpr = parseExprParen <|> (Number <$> parseIntegerLiteral) <|> (Identifier <$> parseId)
 
 parseLocExpr :: Stream b m Char => ParsecT b u m LocExpr
 parseLocExpr = do
