@@ -14,6 +14,8 @@ type Substitution = Map Id Expr
 
 data Expr = Identifier Id
           | Number Integer
+          | EAdd Expr Expr
+          | ESub Expr Expr
     deriving (Read, Show, Eq, Ord)
 
 type LocExpr = (Maybe Location, Expr)
@@ -54,9 +56,17 @@ objectArity :: Object -> Int
 objectArity (Subroutine _ args _) = length args
 objectArity (Macro _ args _) = length args
 
+evaluateNumExpr :: Expr -> Integer
+evaluateNumExpr (Identifier x) = error $ "unexpected identifier " ++ x ++ "."
+evaluateNumExpr (Number n) = n
+evaluateNumExpr (EAdd e1 e2) = evaluateNumExpr e1 + evaluateNumExpr e2
+evaluateNumExpr (ESub e1 e2) = evaluateNumExpr e1 - evaluateNumExpr e2
+
 substituteExpr :: Substitution -> Expr -> Expr
 substituteExpr sub i@(Identifier x)  = M.findWithDefault i x sub
-substituteExpr _   e'                = e'
+substituteExpr sub i@(EAdd e1 e2)  = EAdd (substituteExpr sub e1) (substituteExpr sub e2)
+substituteExpr sub i@(ESub e1 e2)  = ESub (substituteExpr sub e1) (substituteExpr sub e2)
+substituteExpr _ (Number n) = Number n
 
 substituteLocId :: Substitution -> Id -> Id
 substituteLocId sub l | l `M.member` sub = case M.lookup l sub of
