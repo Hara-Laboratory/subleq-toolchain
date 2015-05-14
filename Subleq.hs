@@ -83,7 +83,7 @@ sample = Subleq { _file = def &= argPos 0 &= typFile
                 , _startAddress = def &= explicit &= name "b" &= name "begin" &= typ "ADDRESS" &= opt "100" &= help "The address where the subleq routines start."
                 }
          &= help "Assemble subleq programs."
-         &= summary "Subleq Assembler v0.1.1.4 (C) SAKAMOTO Noriaki"
+         &= summary "Subleq Assembler v0.1.5.1 (C) SAKAMOTO Noriaki"
 
 main :: IO ()
 main = do
