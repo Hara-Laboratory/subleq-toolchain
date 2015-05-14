@@ -51,6 +51,7 @@ library
                        Language.Subleq.Model.Architecture.IntMachine
                        Language.Subleq.Model.Architecture.Fix2Machine
                        Language.Subleq.Model.InstructionSet.Subleq
+                       Language.Subleq.Model.InstructionSet.SubleqR
                        Language.Subleq.Model.InstructionSet.Subneg
                        Language.Subleq.Assembly
                        Language.Subleq.Assembly.Prim
