@@ -63,13 +63,15 @@ parseExprParen :: Stream b m Char => ParsecT b u m Expr
 parseExprParen = do
     char '(' <* spaces
     op <- oneOf "+-" <* space <* spaces
-    e1 <- parseExpr <* space <* spaces
-    e2 <- parseExpr <* spaces
+    e1 <- parseExpr
+    e2 <- optionMaybe (space *> spaces *> parseExpr) <* spaces
     char ')'
     return $ op' op e1 e2
   where
-    op' '+' = EAdd
-    op' '-' = ESub
+    op' '+' e1 Nothing = EAdd (Number 0) e1
+    op' '+' e1 (Just e2') = EAdd e1 e2'
+    op' '-' e1 Nothing = ESub (Number 0) e1
+    op' '-' e1 (Just e2') = ESub e1 e2'
 
 parseExprCurrentPos :: Stream b m Char => ParsecT b u m Expr
 parseExprCurrentPos = do
