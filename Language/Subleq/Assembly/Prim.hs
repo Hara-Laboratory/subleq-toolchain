@@ -62,6 +62,14 @@ evaluateNumExpr (Number n) = n
 evaluateNumExpr (EAdd e1 e2) = evaluateNumExpr e1 + evaluateNumExpr e2
 evaluateNumExpr (ESub e1 e2) = evaluateNumExpr e1 - evaluateNumExpr e2
 
+evaluateNumExprInLocElem :: LocExpr -> LocExpr
+evaluateNumExprInLocElem (l, e) = (l, Number $ evaluateNumExpr e)
+
+evaluateNumExprInElem :: Element -> Element
+evaluateNumExprInElem (ElemInst i les) = ElemInst i $ map evaluateNumExprInLocElem les
+evaluateNumExprInElem e@(SubroutineCall {}) = e
+evaluateNumExprInElem e@(ElemLoc {}) = e
+
 substituteExpr :: Substitution -> Expr -> Expr
 substituteExpr sub i@(Identifier x)  = M.findWithDefault i x sub
 substituteExpr sub i@(EAdd e1 e2)  = EAdd (substituteExpr sub e1) (substituteExpr sub e2)
