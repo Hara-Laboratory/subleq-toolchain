@@ -71,7 +71,7 @@ loadElement _  i e@(SubroutineCall {})    _ = error $ printf "loadElement: addr 
 loadElement _  i e@(ElemInst {})    _ = error $ printf "loadElement: addr %d: instruction (%s) is not expandable" i (show e)
 
 loadElements :: MemoryArchitecture m -> Integer -> [Element] -> m -> m
-loadElements ma i elems m = fst $ Prelude.foldl (\(mem, next) el->loadElement ma next el mem) (m, i) elems
+loadElements ma i elems m = fst $ Prelude.foldl (\(mem, next) el->loadElement ma next (evaluateNumExprInElem el) mem) (m, i) elems
 
 loadObject :: MemoryArchitecture m -> Integer -> Object -> m -> m
 loadObject ma i (Subroutine _ _ elems) = loadElements ma i elems
