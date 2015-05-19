@@ -69,7 +69,7 @@ step = do
     let pc' = if cond then abs pC else pc + 3
     writeMem pB b'
     putPC pc'
-    return $ pC == 0
+    return $ pC /= 0
 
 initialMachine :: (Memory a a m, Num a, Ord a, Enum a) => SubleqState a w m
 initialMachine = (6, Mem.fromAssocList . zip [0..] $ [ 0, 3, 5, 1, 0, 0
