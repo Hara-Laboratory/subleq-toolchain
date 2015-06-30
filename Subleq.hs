@@ -169,7 +169,7 @@ sample = Subleq { _file = def &= argPos 0 &= typFile
                 }
          &= help "Assemble subleq programs"
          &= details ["default config:", show defaultConfig]
-         &= summary "Subleq Assembler v0.1.8.0 (C) SAKAMOTO Noriaki"
+         &= summary "Subleq Assembler v0.1.8.2 (C) SAKAMOTO Noriaki"
 
 main :: IO ()
 main = do
