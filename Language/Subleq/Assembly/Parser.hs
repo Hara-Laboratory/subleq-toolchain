@@ -144,8 +144,12 @@ parseObject = do
     then return obj
     else error $ unlines errors
 
+parseMeaninglessLine :: Stream b m Char => ParsecT b u m String
+parseMeaninglessLine = (replicate 1 <$> endOfLine) <|> parseComment
+
 parseModule :: Stream b m Char => ParsecT b u m Module
 parseModule = do
+    many parseMeaninglessLine
     objs <- many (parseObject <* spaces) <* eof
     let freqs = M.fromListWith (+) [(objectId obj, 1) | obj <- objs]
     if M.null (M.filter (> (1 :: Integer)) freqs)
