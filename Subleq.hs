@@ -128,8 +128,8 @@ initialValues :: (Num a, Integral a) => a -> M.Map String a
 initialValues wl = M.fromList [ ("Inc", -1)
                               , ("Dec",  1)
                               , ("CW", wl)
-                              , ("Min", - (2^wl))
-                              , ("Max", 2^wl - 1)
+                              , ("Min", - (2^(wl - 1)))
+                              , ("Max", 2^(wl - 1) - 1)
                               ]
 
 initialMemFromConfigure :: (Num a, Ord a) => SubleqConfig -> M.Map a a
