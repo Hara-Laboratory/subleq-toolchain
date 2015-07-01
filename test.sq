@@ -27,3 +27,5 @@ Linvloop:T2; Lo T2; T3; T2 T3; Lo; T3 Lo; Inc T1 Linvloop; Z Inc Lend;
 Lloop:Dec Ax Aend;
 Ay Ad Lloop;
 
+@test Rd,Rs,Rt
+Z Z &@add;

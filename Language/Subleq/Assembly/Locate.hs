@@ -78,8 +78,10 @@ loadObject ma i (Subroutine _ _ elems) = loadElements ma i elems
 loadObject ma i (Macro _ _ elems)      = loadElements ma i elems
 
 loadModulePacked :: MemoryArchitecture m -> Integer -> Module -> m -> (Integer, Map Id Integer, m)
-loadModulePacked ma i mo mem = (end, allocation, M.foldr (uncurry $ loadObject ma) mem mao)
+loadModulePacked ma i mo mem = (end, allocation, M.foldr (uncurry $ loadObject ma) mem mao')
     where
+      mao' = M.map (\ (pos, obj) -> (pos, substituteObject subst obj)) mao
       (end, mao) = locateModulePacked ma i mo
+      subst = M.map Number $ M.mapKeysMonotonic ('_':) allocation
       allocation = M.map fst mao
 

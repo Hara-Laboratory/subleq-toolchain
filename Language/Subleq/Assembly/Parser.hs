@@ -29,6 +29,13 @@ parseId = do
     cs <- many (alphaNum <|> oneOf "_")
     return (c:cs)
 
+parseExternalReference :: Stream b m Char => ParsecT b u m Expr
+parseExternalReference = do
+    string "&@"
+    c <- lower
+    cs <- many alphaNum
+    return $ Identifier ('_':c:cs)
+
 parseSubroutineName :: Stream b m Char => ParsecT b u m Id
 parseSubroutineName = do
     c <- lower
@@ -85,7 +92,7 @@ parseExprCurrentPos = do
     op' '-' = ESub
 
 parseExpr :: Stream b m Char => ParsecT b u m Expr
-parseExpr = parseExprParen <|> (Number <$> parseIntegerLiteral) <|> (Identifier <$> parseId)
+parseExpr = parseExprParen <|> (Number <$> parseIntegerLiteral) <|> parseExternalReference <|> (Identifier <$> parseId)
 
 parseLocExpr :: Stream b m Char => ParsecT b u m LocExpr
 parseLocExpr = do
