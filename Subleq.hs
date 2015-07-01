@@ -130,6 +130,10 @@ initialValues wl = M.fromList [ ("Inc", -1)
                               , ("CW", wl)
                               , ("Min", - (2^(wl - 1)))
                               , ("Max", 2^(wl - 1) - 1)
+                              , ("LMax", 2^(wl `div` 2) - 1)
+                              , ("LMin", (2^(wl `div` 2 - 1)))
+                              , ("HDec", (2^(wl `div` 2)))
+                              , ("HInc", - (2^(wl `div` 2)))
                               ]
 
 initialMemFromConfigure :: (Num a, Ord a) => SubleqConfig -> M.Map a a
