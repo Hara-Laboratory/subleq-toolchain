@@ -117,7 +117,7 @@ parseSubroutineCall :: Stream b m Char => ParsecT b u m Element
 parseSubroutineCall = do
     loc <- optionMaybe parseLoc
     (n, args) <- between (string "$(@@") (string ")" >> symbol ";") content
-    return $ SubroutineCall loc n args
+    return $ SubroutineCall loc ('@':n) args
   where
     content = do
       n <- parseSubroutineName <* space <* spaces
@@ -144,12 +144,15 @@ parseObject = do
     isMacro <- try (string "@@" *> return True) <|> (string "@" *> return False)
     (n, args) <- parseHeader
     es <- many (parseElement <* many nonLineBreakSpace <* skipCommentOrSpaces)
-    let obj = (if isMacro then Macro else Subroutine) n args es
+    let obj = (if isMacro then makeMacro else makeSubroutine) n args es
     let errors = errorsObject obj
     -- es <- many (parseElement <* spaces)
     if null errors
     then return obj
     else error $ unlines errors
+  where
+    makeMacro n args es = Macro ('@': n) args es
+    makeSubroutine n args es = Subroutine n args es
 
 parseMeaninglessLine :: Stream b m Char => ParsecT b u m String
 parseMeaninglessLine = (replicate 1 <$> endOfLine) <|> parseComment

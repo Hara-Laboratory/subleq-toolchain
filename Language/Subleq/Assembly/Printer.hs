@@ -32,7 +32,7 @@ printElements = vcat . map printElement
 
 printObject :: Object -> Doc
 printObject (Subroutine n args elems) = text ("@" ++ n) <+> hsep (punctuate comma (map printId args)) $$ nest 4 (printElements elems)
-printObject (Macro n args elems) = text ("@@" ++ n) <+> hsep (punctuate comma (map printId args)) $$ nest 4 (printElements elems)
+printObject (Macro n args elems) = text ("@" ++ n) <+> hsep (punctuate comma (map printId args)) $$ nest 4 (printElements elems)
 
 printModule :: Module -> Doc
 printModule (Module m) = fsep . map printObject . M.elems $ m

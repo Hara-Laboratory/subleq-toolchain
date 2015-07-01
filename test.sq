@@ -29,3 +29,7 @@ Ay Ad Lloop;
 
 @test Rd,Rs,Rt
 Z Z &@add;
+
+@@test Rd,Rs,Rt,AEnd
+Z Z &@test;
+
