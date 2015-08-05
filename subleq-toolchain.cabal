@@ -16,7 +16,7 @@ version:             0.1.8.4
 synopsis:            Toolchain of subleq computer.
 
 -- A longer description of the package.
--- description:         
+description:         Toolchain of subleq computer, which comprise of assembler and simulator.
 
 -- The license under which the package is released.
 license:             GPL-3
@@ -44,6 +44,15 @@ build-type:          Simple
 
 -- Constraint on the version of Cabal needed to build this package.
 cabal-version:       >=1.10
+
+source-repository head
+  type:                git
+  location:            https://github.com/Hara-Laboratory/subleq-toolchain
+
+source-repository this
+  type:                git
+  location:            https://github.com/Hara-Laboratory/subleq-toolchain
+  tag:                 ver-0.1.8.4
 
 library
   exposed-modules:     Language.Subleq.Model.Prim
