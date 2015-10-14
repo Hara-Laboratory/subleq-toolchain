@@ -69,16 +69,19 @@ parseCurrentPos = do
 parseExprParen :: Stream b m Char => ParsecT b u m Expr
 parseExprParen = do
     char '(' <* spaces
-    op <- oneOf "+-" <* space <* spaces
+    op <- ident <* space <* spaces
     e1 <- parseExpr
     e2 <- optionMaybe (space *> spaces *> parseExpr) <* spaces
     char ')'
     return $ op' op e1 e2
   where
-    op' '+' e1 Nothing = EAdd (Number 0) e1
-    op' '+' e1 (Just e2') = EAdd e1 e2'
-    op' '-' e1 Nothing = ESub (Number 0) e1
-    op' '-' e1 (Just e2') = ESub e1 e2'
+    op' "+" e1 Nothing = EAdd (Number 0) e1
+    op' "+" e1 (Just e2') = EAdd e1 e2'
+    op' "-" e1 Nothing = ESub (Number 0) e1
+    op' "-" e1 (Just e2') = ESub e1 e2'
+    op' "shift" e1 (Just e2') = EShiftL e1 e2'
+    letter = oneOf "+-<>" <|> alphaNum
+    ident = many letter
 
 parseExprCurrentPos :: Stream b m Char => ParsecT b u m Expr
 parseExprCurrentPos = do

@@ -7,6 +7,7 @@ import Data.Map (Map)
 import qualified Data.Map as M
 import Text.Printf
 import Data.List
+import Data.Bits
 
 type Id = String
 type Location = String
@@ -16,6 +17,7 @@ data Expr = Identifier Id
           | Number Integer
           | EAdd Expr Expr
           | ESub Expr Expr
+          | EShiftL Expr Expr
     deriving (Read, Show, Eq, Ord)
 
 type LocExpr = (Maybe Location, Expr)
@@ -61,6 +63,7 @@ evaluateNumExpr (Identifier x) = error $ "unexpected identifier " ++ x ++ "."
 evaluateNumExpr (Number n) = n
 evaluateNumExpr (EAdd e1 e2) = evaluateNumExpr e1 + evaluateNumExpr e2
 evaluateNumExpr (ESub e1 e2) = evaluateNumExpr e1 - evaluateNumExpr e2
+evaluateNumExpr (EShiftL e1 e2) = evaluateNumExpr e1 `shift` fromIntegral (evaluateNumExpr e2)
 
 evaluateNumExprInLocElem :: LocExpr -> LocExpr
 evaluateNumExprInLocElem (l, e) = (l, Number $ evaluateNumExpr e)
@@ -74,6 +77,7 @@ substituteExpr :: Substitution -> Expr -> Expr
 substituteExpr sub i@(Identifier x)  = M.findWithDefault i x sub
 substituteExpr sub i@(EAdd e1 e2)  = EAdd (substituteExpr sub e1) (substituteExpr sub e2)
 substituteExpr sub i@(ESub e1 e2)  = ESub (substituteExpr sub e1) (substituteExpr sub e2)
+substituteExpr sub i@(EShiftL e1 e2)  = EShiftL (substituteExpr sub e1) (substituteExpr sub e2)
 substituteExpr _ (Number n) = Number n
 
 substituteLocId :: Substitution -> Id -> Id
