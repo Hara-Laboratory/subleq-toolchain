@@ -19,6 +19,8 @@ import qualified Data.Map as M
 -- import Control.Monad.State
 import Control.Lens
 import System.Console.CmdArgs
+import Paths_subleq_toolchain (version)
+import Data.Version (showVersion)
 
 locateArg :: A.LocateArg
 -- locateArg xs = M.fromList $ zip xs [37, 38, 39] -- DEST_LOC, SRC1_LOC, SRC2_LOC
@@ -173,7 +175,7 @@ sample = Subleq { _file = def &= argPos 0 &= typFile
                 }
          &= help "Assemble subleq programs"
          &= details ["default config:", show defaultConfig]
-         &= summary "Subleq Assembler v0.1.8.4 (C) SAKAMOTO Noriaki"
+         &= summary ("Subleq Assembler " ++ showVersion version ++ " (C) SAKAMOTO Noriaki")
 
 main :: IO ()
 main = do
