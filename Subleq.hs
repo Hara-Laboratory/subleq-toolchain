@@ -91,6 +91,7 @@ defaultConfig = SubleqConfig { _instructionLength = 3
                                                   , ("CW", cw)
                                                   , ("Inc", inc)
                                                   , ("Dec", dec)
+                                                  , ("WordLength", 32)
                                                   ]
                              }
 
