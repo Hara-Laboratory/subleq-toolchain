@@ -68,7 +68,7 @@ library
                        Language.Subleq.Assembly.Parser
                        Language.Subleq.Assembly.Printer
                        Language.Subleq.Assembly.Locate
-  build-depends:       base >=4.7 && <4.8,
+  build-depends:       base >=4.7 && <4.9,
                        containers >=0.5.5.1 && <0.6,
                        mtl >=2.1.3.1 && <2.3,
                        lens >=4.5 && <5,
@@ -91,7 +91,7 @@ Test-Suite test-subleq-toolchain
   -- other-extensions:    
   
   -- Other library packages from which modules are imported.
-  build-depends:       base >=4.7 && <4.8,
+  build-depends:       base >=4.7 && <4.9,
                        containers >=0.5.5.1 && <0.6,
                        mtl >=2.1.3.1 && <2.3,
                        lens >=4.5 && <5,
@@ -110,7 +110,7 @@ Test-Suite test-subleq-toolchain
 executable subleq
   main-is:             Subleq.hs
   -- other-modules:       
-  build-depends:       base >=4.7 && <4.8,
+  build-depends:       base >=4.7 && <4.9,
                        containers >=0.5.5.1 && <0.6,
                        mtl >=2.1.3.1 && <2.3,
                        lens >=4.5 && <5,
