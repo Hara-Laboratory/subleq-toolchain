@@ -15,6 +15,7 @@ printExpr (Identifier i) = printId i
 printExpr (Number n) = integer n
 printExpr (EAdd e1 e2) = parens $ sep [text "+", printExpr e1, printExpr e2]
 printExpr (ESub e1 e2) = parens $ sep [text "-", printExpr e1, printExpr e2]
+printExpr (EShiftL e1 e2) = parens $ sep [text "shift", printExpr e1, printExpr e2]
 
 printLocExpr :: LocExpr -> Doc
 printLocExpr (l, e) = maybe empty printLoc l <> printExpr e
